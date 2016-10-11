@@ -3,6 +3,9 @@
 <canvas id="myCanvas" width="500" height="600" style="border:2px solid #000000;">
 </canvas>
 <br/>
+<form>
+Pencil: <input type="radio" name="mode" id="rPencil">  &nbsp; &nbsp; Rectangle: <input type="radio" name="mode" id="rRectangle">
+</form>
 <button onclick="clearButtonHandler()">Clear</button>
 
 <script language="JavaScript">
@@ -29,6 +32,17 @@ document.onkeydown = keyDownHandler;
 var canvas = document.getElementById("myCanvas");
 var canvas_context = canvas.getContext("2d");
 
+canvas_context.rect(10,10,100,100);
+canvas_context.stroke();
+window.alert("Check");
+
+
+var radio_pencil = document.getElementById("rPencil");
+radio_pencil.checked = true;  //Pencil is the default
+
+var radio_rectangle = document.getElementById("rRectangle");
+radio_rectangle.checked = false;  
+
 var buttonIsDown = false;
 
 // this is the set of strokes already drawn
@@ -54,7 +68,22 @@ function mouseUpHandler(e) {
 	console.log("mouse up");
 
 	if ( stroke.length > 2 ) {
+		
+		rtl_x=stroke[0].x;
+		rtl_y=stroke[0].y;
+		rbr_x=stroke[0].x;
+		rbr_y=stroke[0].y;
+		
+		// Define the smallest rectangle that the stroke can fit into and store those points with the stroke 
+		// As top left x, top left y, bottom right x and bottom right y
+		for (var i = 0; i < stroke.length; i++) {
+			if ( (rtl_x < stroke[i].x) && (rtl_y < stroke[i].y) ) {  rtl_x = stroke[i].x; rtl_y = stroke[i].y; } 
+			if ( (rbr_x > stroke[i].x) && (rbr_y > stroke[i].y) ) {  rbr_x = stroke[i].x; rbr_y = stroke[i].y; } 
+		}
+		canvas_context.rect(rtl_x,rtl_y, (rbr_x - rtl_y), (rbr_y - rtl_y));
+		canvas_context.stroke();
 		arrayOfStrokes.push( stroke );
+		//store x,y.  rtl - Rectangle top left of, rbr - rectacngle bottom right
 	}
 	stroke = [];
 }
@@ -63,7 +92,8 @@ function mouseMoveHandler(e) {
 	var event_x = e.clientX - canvas_rectangle.left;
 	var event_y = e.clientY - canvas_rectangle.top;
 	console.log("mouse move");
-	if ( buttonIsDown ) {
+	if ( buttonIsDown && radio_pencil.checked === true  ) {
+
 		stroke.push( { x : event_x, y : event_y } );
 	}
 	redraw();
@@ -113,5 +143,4 @@ function clearButtonHandler() {
 
 </body>
 </html>
-
 
