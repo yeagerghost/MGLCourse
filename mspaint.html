@@ -7,6 +7,7 @@
 Pencil: <input type="radio" name="mode" id="rPencil">  &nbsp; &nbsp; Rectangle: <input type="radio" name="mode" id="rRectangle">
 </form>
 <button onclick="clearButtonHandler()">Clear</button>
+<button onclick="drawRectangle()">Draw Rectangle</button>
 
 <script language="JavaScript">
 
@@ -31,11 +32,6 @@ document.onkeydown = keyDownHandler;
 
 var canvas = document.getElementById("myCanvas");
 var canvas_context = canvas.getContext("2d");
-
-canvas_context.rect(10,10,100,100);
-canvas_context.stroke();
-window.alert("Check");
-
 
 var radio_pencil = document.getElementById("rPencil");
 radio_pencil.checked = true;  //Pencil is the default
@@ -69,21 +65,22 @@ function mouseUpHandler(e) {
 
 	if ( stroke.length > 2 ) {
 		
-		rtl_x=stroke[0].x;
-		rtl_y=stroke[0].y;
-		rbr_x=stroke[0].x;
-		rbr_y=stroke[0].y;
+		min_x=stroke[0].x;
+		min_y=stroke[0].y;
+		max_x=stroke[0].x;
+		max_y=stroke[0].y;
+		console.log("minx " + min_x + " miny " + min_y + " maxx " + max_x + " maxy " + max_y);
 		
 		// Define the smallest rectangle that the stroke can fit into and store those points with the stroke 
-		// As top left x, top left y, bottom right x and bottom right y
 		for (var i = 0; i < stroke.length; i++) {
-			if ( (rtl_x < stroke[i].x) && (rtl_y < stroke[i].y) ) {  rtl_x = stroke[i].x; rtl_y = stroke[i].y; } 
-			if ( (rbr_x > stroke[i].x) && (rbr_y > stroke[i].y) ) {  rbr_x = stroke[i].x; rbr_y = stroke[i].y; } 
+			if ( stroke[i].x < min_x ) min_x = stroke[i].x;
+			if ( stroke[i].y < min_y ) min_y = stroke[i].y;
+			if ( stroke[i].x > max_x ) max_x = stroke[i].x;
+			if ( stroke[i].y > max_y ) max_y = stroke[i].y;
 		}
-		canvas_context.rect(rtl_x,rtl_y, (rbr_x - rtl_y), (rbr_y - rtl_y));
+		canvas_context.rect(min_x,min_y, (max_x - min_x), (max_y - min_y));
 		canvas_context.stroke();
-		arrayOfStrokes.push( stroke );
-		//store x,y.  rtl - Rectangle top left of, rbr - rectacngle bottom right
+		arrayOfStrokes.push( { points : stroke, x1 : min_x, y1 : min_y, x2 : max_x, y2 : max_y} );
 	}
 	stroke = [];
 }
@@ -123,7 +120,14 @@ var redraw = function() {
 
 	canvas_context.strokeStyle = "#000000";
 	for ( var i = 0; i < arrayOfStrokes.length; ++i ) {
-		drawStroke( arrayOfStrokes[i] );
+		drawStroke( arrayOfStrokes[i].points );
+		//canvas_context.rect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
+		console.log("X - " + arrayOfStrokes[i].x1) ; // + "X - " + arrayOfStrokes[i].min_y + "X - " + (arrayOfStrokes[i].max_x - arrayOfStrokes[i].min_x) + "x - " + (arrayOfStrokes[i].max_y - arrayOfStrokes[i].min_y));
+		//canvas_context.rect(10,10,100,100);
+		//canvas_context.stroke();
+		canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
+		canvas_context.fillRect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
+
 	}
 
 	if ( buttonIsDown ) {
@@ -139,8 +143,14 @@ function clearButtonHandler() {
 	redraw();
 }
 
+function drawRectangle() {
+	canvas_context.rect(20, 20, 50, 100);
+	canvas_context.stroke();
+}
+
 </script>
 
 </body>
 </html>
+
 
