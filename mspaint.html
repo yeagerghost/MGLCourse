@@ -47,14 +47,33 @@ var arrayOfStrokes = [];
 // this is the stroke currently being drawn
 var stroke = []; // each stroke is an array of points
 
+// starting and ending points of a rectangle select
+var start_x = 0;
+var start_y = 0;
+var end_x = 0;
+var end_y = 0;
+
 function mouseDownHandler(e) {
 	buttonIsDown = true;
 	var canvas_rectangle = canvas.getBoundingClientRect();
 	var event_x = e.clientX - canvas_rectangle.left;
 	var event_y = e.clientY - canvas_rectangle.top;
-	console.log("mouse down");
-	console.log("   " + event_x + "," + event_y);
-	stroke = [];
+	if ( radio_pencil.checked === true ) { 
+		console.log("mouse down");
+		console.log("   " + event_x + "," + event_y);
+		stroke = [];
+	}
+
+	// set starting co-ordinates of select rectangle 
+	if (radio_rectangle.checked === true ) {
+		console.log ("Button down rect");
+		start_x = event_x;
+		start_y = event_y;
+		end_x = event_x;
+		end_y = event_y ;
+		console.log(" sx  " + start_x + " , sy " + start_y + " ex  " + end_x + " , ey " + end_y);
+	}
+
 }
 function mouseUpHandler(e) {
 	buttonIsDown = false;
@@ -71,18 +90,24 @@ function mouseUpHandler(e) {
 		max_y=stroke[0].y;
 		console.log("minx " + min_x + " miny " + min_y + " maxx " + max_x + " maxy " + max_y);
 		
-		// Define the smallest rectangle that the stroke can fit into and store those points with the stroke 
+		// Define the smallest rectangle that the stroke can fit into and store those points within the array the strokes
 		for (var i = 0; i < stroke.length; i++) {
 			if ( stroke[i].x < min_x ) min_x = stroke[i].x;
 			if ( stroke[i].y < min_y ) min_y = stroke[i].y;
 			if ( stroke[i].x > max_x ) max_x = stroke[i].x;
 			if ( stroke[i].y > max_y ) max_y = stroke[i].y;
 		}
+
 		canvas_context.rect(min_x,min_y, (max_x - min_x), (max_y - min_y));
 		canvas_context.stroke();
-		arrayOfStrokes.push( { points : stroke, x1 : min_x, y1 : min_y, x2 : max_x, y2 : max_y} );
+		arrayOfStrokes.push( { points : stroke, x1 : min_x, y1 : min_y, x2 : max_x, y2 : max_y, selected : false} );
 	}
 	stroke = [];
+
+	// if (radio_rectangle.checked === true) { start_x = 0; start_y = 0; end_x = 0; end_y = 0 }
+	if (radio_rectangle.checked === true) { 
+		start_x = 0; start_y = 0; end_x = 0; end_y = 0 
+	}
 }
 function mouseMoveHandler(e) {
 	var canvas_rectangle = canvas.getBoundingClientRect();
@@ -92,6 +117,11 @@ function mouseMoveHandler(e) {
 	if ( buttonIsDown && radio_pencil.checked === true  ) {
 
 		stroke.push( { x : event_x, y : event_y } );
+	}
+	if ( buttonIsDown && radio_rectangle.checked === true  ) {
+
+		end_x = event_x;
+		end_y = event_y;
 	}
 	redraw();
 }
@@ -115,24 +145,43 @@ function drawStroke( s ) {
 	canvas_context.stroke();
 }
 
+
+function drawRectSelect( ) {
+	canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
+	//canvas_context.fillRect(10,10,100,100);
+	canvas_context.fillRect(start_x, start_y, end_x - start_x, end_y - start_y);
+}
+
 var redraw = function() {
 	canvas_context.clearRect(0, 0, canvas.width, canvas.height);
-
 	canvas_context.strokeStyle = "#000000";
 	for ( var i = 0; i < arrayOfStrokes.length; ++i ) {
 		drawStroke( arrayOfStrokes[i].points );
 		//canvas_context.rect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
 		console.log("X - " + arrayOfStrokes[i].x1) ; // + "X - " + arrayOfStrokes[i].min_y + "X - " + (arrayOfStrokes[i].max_x - arrayOfStrokes[i].min_x) + "x - " + (arrayOfStrokes[i].max_y - arrayOfStrokes[i].min_y));
-		//canvas_context.rect(10,10,100,100);
-		//canvas_context.stroke();
+		/* ================= Remove highlight of rectangle after ========================
 		canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
 		canvas_context.fillRect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
+		*/
+		
+		if (arrayOfStrokes[i].selected === true) {
+			canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
+			canvas_context.fillRect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
+		}
+		
 
 	}
 
-	if ( buttonIsDown ) {
+	if ( buttonIsDown && radio_pencil.checked === true) {
 		canvas_context.strokeStyle = "#ff0000";
 		drawStroke( stroke );
+	}
+	
+	if ( buttonIsDown && radio_rectangle.checked === true) {
+		canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
+		//canvas_context.fillRect(10,10,100,100);
+		canvas_context.fillRect(start_x, start_y, end_x - start_x, end_y - start_y);
+		//drawRectSelect();
 	}
 }
 
@@ -143,10 +192,16 @@ function clearButtonHandler() {
 	redraw();
 }
 
+
 function drawRectangle() {
-	canvas_context.rect(20, 20, 50, 100);
+	canvas_context.strokeStyle = "#ff0000";
+	canvas_context.fillRect(100, 100, 50, 100);
+	canvas_context.stroke();
+	window.alert("wait for it");
+	canvas_context.rect(100, 100, -70, 100);
 	canvas_context.stroke();
 }
+
 
 </script>
 
