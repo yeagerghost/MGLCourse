@@ -98,7 +98,7 @@ function mouseUpHandler(e) {
 			if ( stroke[i].y > max_y ) max_y = stroke[i].y;
 		}
 
-		canvas_context.rect(min_x,min_y, (max_x - min_x), (max_y - min_y));
+		// canvas_context.rect(min_x,min_y, (max_x - min_x), (max_y - min_y));
 		canvas_context.stroke();
 		arrayOfStrokes.push( { points : stroke, x1 : min_x, y1 : min_y, x2 : max_x, y2 : max_y, selected : false} );
 	}
@@ -106,6 +106,7 @@ function mouseUpHandler(e) {
 
 	// if (radio_rectangle.checked === true) { start_x = 0; start_y = 0; end_x = 0; end_y = 0 }
 	if (radio_rectangle.checked === true) { 
+		markObjects ();
 		start_x = 0; start_y = 0; end_x = 0; end_y = 0 
 	}
 }
@@ -150,7 +151,30 @@ function drawRectSelect( ) {
 	canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
 	//canvas_context.fillRect(10,10,100,100);
 	canvas_context.fillRect(start_x, start_y, end_x - start_x, end_y - start_y);
+} 
+
+function markObjects( ) {
+	for ( var i = 0; i < arrayOfStrokes.length; ++i ) {
+		console.log ("sx: " + start_x + " sy: " + start_y + " ex: " + end_x + " ey: " + end_y);
+		console.log ( "minx : " + Math.min(start_x, end_x) + " miny : " + Math.min(start_y, end_y) );
+		console.log ( "maxx : " + Math.max(start_x, end_x) + " maxy : " + Math.max(start_y, end_y) );
+		console.log ("x1: " + arrayOfStrokes[i].x1 + " y1: " + arrayOfStrokes[i].y1 + " x2: " + arrayOfStrokes[i].x2+ " y2: " + arrayOfStrokes[i].y2 );
+		if ( 
+		     Math.min(start_x, end_x) < (arrayOfStrokes[i].x1) &&
+		     Math.min(start_y, end_y) < (arrayOfStrokes[i].y1) &&
+		     Math.max(start_x, end_x) > (arrayOfStrokes[i].x2) &&
+		     Math.max(start_y, end_y) > (arrayOfStrokes[i].y1)
+		   ) { console.log ("enclosed"); arrayOfStrokes[i].selected = true; }
+
+		//canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
+		//canvas_context.fillRect(10,10,100,100);
+		//canvas_context.fillRect(start_x, start_y, end_x - start_x, end_y - start_y);
+		//canvas_context.fillRect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
+
+	} 
 }
+
+
 
 var redraw = function() {
 	canvas_context.clearRect(0, 0, canvas.width, canvas.height);
@@ -158,7 +182,7 @@ var redraw = function() {
 	for ( var i = 0; i < arrayOfStrokes.length; ++i ) {
 		drawStroke( arrayOfStrokes[i].points );
 		//canvas_context.rect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
-		console.log("X - " + arrayOfStrokes[i].x1) ; // + "X - " + arrayOfStrokes[i].min_y + "X - " + (arrayOfStrokes[i].max_x - arrayOfStrokes[i].min_x) + "x - " + (arrayOfStrokes[i].max_y - arrayOfStrokes[i].min_y));
+		//console.log("X - " + arrayOfStrokes[i].x1) ; // + "X - " + arrayOfStrokes[i].min_y + "X - " + (arrayOfStrokes[i].max_x - arrayOfStrokes[i].min_x) + "x - " + (arrayOfStrokes[i].max_y - arrayOfStrokes[i].min_y));
 		/* ================= Remove highlight of rectangle after ========================
 		canvas_context.fillStyle = 'rgba(105,225,225,0.5)';
 		canvas_context.fillRect(arrayOfStrokes[i].x1,arrayOfStrokes[i].y1, (arrayOfStrokes[i].x2 - arrayOfStrokes[i].x1), (arrayOfStrokes[i].y2 - arrayOfStrokes[i].y1));
